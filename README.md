@@ -1,2 +1,2 @@
-# ADISE25_202303_chess
+# Lectures25_chess
 Το σκάκι!
