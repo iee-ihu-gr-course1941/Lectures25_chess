@@ -19,4 +19,5 @@ Array
 )
 */
 print_r($person);
+print_r($person);
 ?>
