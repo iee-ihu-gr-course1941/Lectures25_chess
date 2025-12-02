@@ -2,7 +2,9 @@
 
 require_once "lib/dbconnect.php";
 require_once "lib/board.php";
-
+////////////
+//New require_once
+require_once "lib/game.php";
 
 $method = $_SERVER['REQUEST_METHOD'];
 $request = explode('/', trim($_SERVER['PATH_INFO'],'/'));
@@ -25,9 +27,11 @@ switch ($r=array_shift($request)) {
 				break;
 			default: 
 			  header("HTTP/1.1 404 Not Found");
+				print "<h1>Page not found (404)</h1>";
 				break;
 	}
 	break;
+	//////////////
   // New code...	
 	case 'status': 
 		if(sizeof($request)==0) {
@@ -41,38 +45,43 @@ switch ($r=array_shift($request)) {
 		break;
   default: 	
 	  header("HTTP/1.1 404 Not Found");
-    print "<h1>not FOUND</h1>";
+		print "<h1>Page not found (404)</h1>";
 	  exit;
   // End New code...	
+	//////////////
 }
 
 function handle_board($method) {
-    if($method=='GET') {
-            show_board();
-    } else if ($method=='POST') {
-           reset_board();
-    } else {
-        header('HTTP/1.1 405 Method Not Allowed');
-    }
+  if($method=='GET') {
+    show_board();
+  } else if ($method=='POST') {
+    reset_board();
+  } else {
+    header('HTTP/1.1 405 Method Not Allowed');
+  	print "<h1>Method Not Allowed (405)</h1>";
+  }
 }
 
+//////////////
 // New Code...
 function handle_piece($method, $x, $y, $input) {
-    print("x=$x, y=$y");
-    print_r($input);
+  print("x=$x, y=$y");
+  print_r($input);
 }
 
 function handle_player($method, $p, $input) {
-    ;
+  
 }
 
 function handle_status($method) {
-    if($method=='GET') {
-        show_status();
-    } else {
-        header('HTTP/1.1 405 Method Not Allowed');
-    }
+  if($method=='GET') {
+    show_status();
+  } else {
+    header('HTTP/1.1 405 Method Not Allowed');
+		print "<h1>Method Not Allowed (405)</h1>";
+	}
 }
 // End new code...
+//////////////
 
 ?>
