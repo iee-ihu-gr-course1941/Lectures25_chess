@@ -1,7 +1,5 @@
 <?php
 
-// require_once 
-
 $method = $_SERVER['REQUEST_METHOD'];
 $request = explode('/', trim($_SERVER['PATH_INFO'],'/'));
 // $request = explode('/', trim($_SERVER['SCRIPT_NAME'],'/'));
@@ -39,7 +37,6 @@ function handle_board($method) {
     } else {
         header('HTTP/1.1 405 Method Not Allowed');
     }
-    
 }
 
 ?>

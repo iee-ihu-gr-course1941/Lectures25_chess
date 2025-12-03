@@ -2,8 +2,6 @@
 
 require_once "lib/dbconnect.php";
 require_once "lib/board.php";
-////////////
-//New require_once
 require_once "lib/game.php";
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -13,26 +11,24 @@ $request = explode('/', trim($_SERVER['PATH_INFO'],'/'));
 $input = json_decode(file_get_contents('php://input'),true);
 
 switch ($r=array_shift($request)) {
-  case 'board' : 
+	case 'board' : 
 		switch ($b=array_shift($request)) {
-			case '':
-			case null: 
-			  handle_board($method);
-			  break;
+	  		case '':
+	  		case null: 
+				handle_board($method);
+				break;
 			case 'piece': 
-			  handle_piece($method, $request[0], $request[1], $input);
+				handle_piece($method, $request[0], $request[1], $input);
 				break;
 			case 'player': 
-			  handle_player($method, $request[0], $input);
+				handle_player($method, $request[0], $input);
 				break;
 			default: 
-			  header("HTTP/1.1 404 Not Found");
+				header("HTTP/1.1 404 Not Found");
 				print "<h1>Page not found (404)</h1>";
 				break;
-	}
-	break;
-	//////////////
-  // New code...	
+		}
+		break;
 	case 'status': 
 		if(sizeof($request)==0) {
 			handle_status($method);
@@ -41,32 +37,28 @@ switch ($r=array_shift($request)) {
 		}
 		break;
 	case 'players': 
-	  handle_player($method, $request, $input);
+		handle_player($method, $request, $input);
 		break;
   default: 	
-	  header("HTTP/1.1 404 Not Found");
+		header("HTTP/1.1 404 Not Found");
 		print "<h1>Page not found (404)</h1>";
 	  exit;
-  // End New code...	
-	//////////////
 }
 
 function handle_board($method) {
-  if($method=='GET') {
-    show_board();
-  } else if ($method=='POST') {
-    reset_board();
-  } else {
-    header('HTTP/1.1 405 Method Not Allowed');
-  	print "<h1>Method Not Allowed (405)</h1>";
-  }
+	if($method=='GET') {
+    	show_board();
+  	} else if ($method=='POST') {
+    	reset_board();
+  	} else {
+    	header('HTTP/1.1 405 Method Not Allowed');
+  		print "<h1>Method Not Allowed (405)</h1>";
+  	}
 }
 
-//////////////
-// New Code...
 function handle_piece($method, $x, $y, $input) {
-  print("x=$x, y=$y");
-  print_r($input);
+  	print("x=$x, y=$y");
+  	print_r($input);
 }
 
 function handle_player($method, $p, $input) {
@@ -81,7 +73,5 @@ function handle_status($method) {
 		print "<h1>Method Not Allowed (405)</h1>";
 	}
 }
-// End new code...
-//////////////
 
 ?>
