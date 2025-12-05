@@ -5,6 +5,7 @@ $( function() {
     $('#chess_reset').click(reset_board);
 }
 );
+
 function draw_empty_board() {
 	var t='<table id="chess_table">';
 	for(var i=8;i>0;i--) {
@@ -22,19 +23,23 @@ function draw_empty_board() {
 function fill_board() {
 	$.ajax(
 		{	method: "get",
-			url: "chess.php/board/", 
+			url: "chess.php/board/" , 
 		 success: fill_board_by_data 
 		}
 		);
 }
 
 function fill_board_by_data(data) {
+	
 	for(var i=0;i<data.length;i++) {
 		var o = data[i];
 		var id = '#square_'+ o.x +'_' + o.y;
 		var c = (o.piece!=null)?o.piece_color + o.piece:'';
-        var im = (o.piece!=null)?'<img src="images/'+c+'.png" class="piece">':'';
-	//	$(id).addClass(o.b_color+'_square');
+		
+		var im = ''; //Χωρίς τα πιόνια
+		var im = (o.piece!=null)?c:''; //πιόνια σαν text
+    var im = (o.piece!=null)?'<img src="images/'+c+'.png" class="piece">':''; //πιόνια με εικόνα
+		
 		$(id).addClass(o.b_color+'_square').html(im);
 		
 	}

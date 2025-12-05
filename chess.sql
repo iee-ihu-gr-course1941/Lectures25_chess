@@ -123,55 +123,5 @@ END ;;
 DELIMITER ;
 
 
--- PROCEDURE move_piece with TRANSACTION
-/*DROP PROCEDURE IF EXISTS `move_piece`;
-
-DELIMITER ;;
-
-CREATE DEFINER=`root`@`localhost` PROCEDURE `move_piece`(
-    IN x1 tinyint,
-    IN y1 tinyint,
-    IN x2 tinyint,
-    IN y2 tinyint
-)
-BEGIN
-    -- 1. Δηλώνουμε τις μεταβλητές
-	DECLARE p CHAR(10);
-	DECLARE p_color CHAR(1);
-    
-    -- Ξεκινάμε ρητά τη συναλλαγή
-    START TRANSACTION;
-
-    -- 2. Λαμβάνουμε το κομμάτι και το χρώμα από την αρχική θέση (x1, y1)
-	SELECT piece, piece_color 
-    INTO p, p_color 
-    FROM `board` 
-    WHERE X = x1 AND Y = y1;
-
-    -- Εδώ θα μπορούσαμε να προσθέσουμε ελέγχους (IF statements) 
-    -- για το αν το κομμάτι υπάρχει (p IS NOT NULL) ή αν η κίνηση είναι έγκυρη (ΕΛΕΓΧΟΙ)
-    -- Αν κάποιος έλεγχος αποτύχει, θα καλούσαμε ROLLBACK.
-
-    -- 3. Ενημερώνουμε τη νέα θέση (x2, y2) με το κομμάτι και το χρώμα
-	UPDATE board
-	SET piece = p, piece_color = p_color
-	WHERE X = x2 AND Y = y2;
-
-    -- 4. Μηδενίζουμε την αρχική θέση (x1, y1)
-	UPDATE board
-	SET piece = NULL, piece_color = NULL
-	WHERE X = x1 AND Y = y1;
-
-    -- 5. Ενημερώνουμε τη σειρά του παίκτη (αλλάζουμε από W σε B ή αντίστροφα)
-	UPDATE game_status 
-    SET p_turn = IF(p_color = 'W', 'B', 'W');
-	
-    -- 6. Οριστικοποιούμε (Commit) όλες τις αλλαγές, καθώς ήταν επιτυχείς
-    COMMIT;
-
-END ;;
-
-DELIMITER ;*/
-
 
 
