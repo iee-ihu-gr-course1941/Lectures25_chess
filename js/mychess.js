@@ -45,11 +45,10 @@ function fill_board_by_data(data) {
 	}
 }
 
-
 function reset_board() {
 	$.ajax(
-		{url: "chess.php/board/", 
-         method: 'post',
+		{method: 'post',
+		 url: "chess.php/board/", 
 		 success: fill_board_by_data 
 		}
 		);
