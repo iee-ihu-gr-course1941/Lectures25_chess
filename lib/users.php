@@ -5,7 +5,7 @@ require_once "lib/game.php";
 function handle_user($method, $b,$input) {
 	if($method=='GET') {
 		show_user($b);
-	} else if($method=='PUT') {
+	} else if($method=='PUT') { 
         set_user($b,$input);
     }
 }
@@ -30,7 +30,11 @@ function set_user($b,$input) {
 	$username=$input['username'];
 	global $mysqli;
 
-	$sql = 'select count(*) as c from players where piece_color=? and username is not null';
+	$sql = 'select count(*) as c 
+	        from players 
+			where piece_color=? 
+			and username is not null
+			and last_action > (NOW() - INTERVAL 5 MINUTE)';
 	$st = $mysqli->prepare($sql);
 	$st->bind_param('s',$b);
 	$st->execute();
@@ -42,7 +46,10 @@ function set_user($b,$input) {
 		exit;
 	}
 
-	$sql = 'update players set username=?, token=md5(CONCAT( ?, NOW()))  where piece_color=?';
+	$sql = 'update players 
+	        set username=?, 
+	        token=md5(CONCAT( ?, NOW()))
+		    where piece_color=?';
 	$st2 = $mysqli->prepare($sql);
 	$st2->bind_param('sss',$username,$username,$b);
 	$st2->execute();

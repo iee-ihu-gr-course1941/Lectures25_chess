@@ -1,8 +1,9 @@
 <?php
 
-require_once "lib/dbconnect.php";
+require_once "lib/dbconnect.php"; 
 require_once "lib/board.php";
 require_once "lib/game.php";
+require_once "lib/users.php";
 
 $method = $_SERVER['REQUEST_METHOD'];
 $request = explode('/', trim($_SERVER['PATH_INFO'],'/'));
@@ -36,7 +37,7 @@ switch ($r=array_shift($request)) {
 			header("HTTP/1.1 404 Not Found");
 		}
 		break;
-	case 'players': 
+	case 'player': 
 		handle_player($method, $request, $input);
 		break;
   default: 	
@@ -85,5 +86,7 @@ function handle_status($method) {
 		print "<h1>Method Not Allowed (405)</h1>";
 	}
 }
+
+
 
 ?>
