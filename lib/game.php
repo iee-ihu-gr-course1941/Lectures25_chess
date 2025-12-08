@@ -3,6 +3,8 @@
 function show_status() {
     global $mysqli;
 	
+    update_game_status();
+
 	$sql = 'select * from game_status';
 	$st = $mysqli->prepare($sql);
 

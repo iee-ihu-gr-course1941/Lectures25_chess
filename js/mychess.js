@@ -9,6 +9,8 @@ $( function() {
 
 	$('#chess_login').click(login_to_game);
 
+	game_status_update();
+
 }
 );
 
@@ -65,11 +67,11 @@ function fill_board_by_data(data) {
 		
 		var im = ''; //Χωρίς τα πιόνια
 		var im = (o.piece!=null)?c:''; //πιόνια σαν text
-    var im = (o.piece!=null)?'<img src="images/'+c+'.png" class="piece">':''; //πιόνια με εικόνα
+	    var im = (o.piece!=null)?'<img src="images/'+c+'.png" class="piece">':''; //πιόνια με εικόνα
 		
 		$(id).addClass(o.b_color+'_square').html(im);
-		
 	}
+	update_info();
 }
 
 function reset_board() {
@@ -102,12 +104,20 @@ function login_to_game() {
 function login_result(data) {
 	me = data[0];
 	$('#game_initializer').hide();
-	update_info();
 	game_status_update();
+	update_info();
 }
 
 function update_info(){
-	$('#game_info').html("I am Player: "+me.piece_color+", my name is "+me.username +'<br>Token='+me.token+'<br>Game state: '+game_status.status+', '+ game_status.p_turn+' must play now.');	
+	if (me.username) {
+    	if (game_status.status=='initialized') {
+	  		$('#game_info').html("I am Player: " + me.piece_color + ", my name is " + me.username + "<br>Token=" + me.token + "<br>Game status: " + ((game_status && game_status.status) ? game_status.status : "Not active") + ", Waiting for the other player to join...");	
+	  	} else {
+	    	$('#game_info').html("I am Player: " + me.piece_color + ", my name is " + me.username + "<br>Token=" + me.token + "<br>Game status: " + ((game_status && game_status.status) ? game_status.status : "Not active") + ", " + game_status.p_turn + " must play now.");	
+	  	}
+	} else {
+		$('#game_info').html("Game status: " + ((game_status && game_status.status) ? game_status.status : "Not active"));
+	}
 }
 
 function login_error(data,y,z,c) {
