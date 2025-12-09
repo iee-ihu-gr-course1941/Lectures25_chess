@@ -65,12 +65,10 @@ function handle_board($method) {
 //////////////
 // New Code...
 function handle_piece($method, $x, $y, $input) {
-  print("x=$x, y=$y");
-  print_r($input);
 }
 
 function handle_player($method, $p, $input) {
-  
+ 
 }
 
 function handle_status($method) {
