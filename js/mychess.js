@@ -123,6 +123,7 @@ function game_status_update() {
 	$.ajax({url: "chess.php/status/", success: update_status });
 }
 
+//lecture chess 3
 function update_status(data) {
 	if (game_status.p_turn==null ||  data[0].p_turn != game_status.p_turn ||  data[0].status != game_status.status) {
 		fill_board();
@@ -130,7 +131,6 @@ function update_status(data) {
 	game_status=data[0];
 	update_info();
 	 if(game_status.p_turn==me.piece_color &&  me.piece_color!=null) {
-		x=0;
 		// do play
 		$('#move_div').show(1000);
 		setTimeout(function() { game_status_update();}, 15000);
@@ -155,13 +155,13 @@ function do_move() {
 			method: 'PUT',
 			dataType: "json",
 			contentType: 'application/json',
-			data: JSON.stringify( {x: a[2], y: a[3]}),
-			headers: {"X-Token": me.token},
+			data: JSON.stringify( {x: a[2], y: a[3], token: me.token}), // token: me.token --> Προσωρινά, αφού θα το στέλνουμε τελικά στο headers
+			headers: {"App-Token": me.token},
 			success: move_result,
 			error: login_error});
 }
 
 //lecture chess 4 empty at first
 function move_result() {
-
+  fill_board_by_data(data);
 }

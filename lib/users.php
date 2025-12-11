@@ -44,7 +44,7 @@ function set_user($b,$input) {
 	        from players 
 			where piece_color=? 
 			and username is not null
-			and last_action > (NOW() - INTERVAL 5 MINUTE)';
+			and last_action > (NOW() - INTERVAL 20 MINUTE)';
 	$st = $mysqli->prepare($sql);
 	$st->bind_param('s',$b);
 	$st->execute();
