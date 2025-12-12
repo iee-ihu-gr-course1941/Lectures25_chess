@@ -51,8 +51,45 @@ function draw_empty_board(p) {
 	t+='</table>';
 
 	$('#chess_board').html(t);
+
+	//Lecture 4
+	//Onclick add handler on each square
+	$('.chess_square').click(click_on_piece);
 }
 
+
+function click_on_piece(e) {
+	var o=e.target;
+	if(o.tagName!='TD') {o=o.parentNode;}
+	if(o.tagName!='TD') {return;}
+	
+	var id=o.id;
+	var a=id.split(/_/);
+	$('#the_move_src').val(a[1]+' ' +a[2]);
+	update_moves_selector();
+}
+
+function update_moves_selector() {
+	$('.chess_square').removeClass('pmove').removeClass('tomove');
+	var s = $('#the_move_src').val();
+	var a = s.trim().split(/[ ]+/);
+	$('#the_move_dest').html('');
+	if(a.length!=2) {
+		return;
+	}
+	var id = '#square_'+ a[0]+'_'+a[1];
+	$(id).addClass('tomove');
+	for(i=0;i<board.length;i++) {
+		if(board[i].x==a[0] && board[i].y==a[1]) {
+			for(m=0;m<board[i].moves.length;m++) {
+				$('#the_move_dest').append('<option value="'+board[i].moves[m].x+' '+board[i].moves[m].y+'">'+board[i].moves[m].x+' '+board[i].moves[m].y+'</option>');
+				var id = '#square_'+ board[i].moves[m].x +'_' + board[i].moves[m].y;
+				$(id).addClass('pmove');
+			}
+			
+		}
+	}
+}
 
 function fill_board() {
 	$.ajax({	
@@ -85,6 +122,10 @@ function reset_board() {
 		headers: {"App-Token": me.token},			
 	 	success: fill_board_by_data 
 	});
+
+	//Lecture 4 Πινελιές
+	$('#move_div').hide();
+	$('#game_initializer').show(2000);
 }
 
 function login_to_game() {
@@ -115,10 +156,6 @@ function login_result(data) {
 	game_status_update();
 }
 
-function update_info(){
-	$('#game_info').html("I am Player: "+me.piece_color+", my name is "+me.username +'<br>Token='+me.token+'<br>Game state: '+game_status.status+', '+ game_status.p_turn+' must play now.');	
-}
-
 function login_error(data,y,z,c) {
 	var x = data.responseJSON;
 	alert(x.errormesg);
@@ -136,23 +173,44 @@ function game_status_update() {
 	});
 }
 
-//lecture chess 3
+function update_info(){
+	$('#game_info').html("I am Player: "+me.piece_color+", my name is "+me.username +'<br>Token='+me.token+'<br>Game state: '+game_status.status+', '+ game_status.p_turn+' must play now.');	
+}
+
+//lecture 3 1st stage
+// function update_status(data) {
+// 	if (game_status.p_turn==null ||  data[0].p_turn != game_status.p_turn ||  data[0].status != game_status.status) {
+// 		fill_board();
+// 	}
+// 	game_status=data[0];
+// 	update_info();
+// 	 if(game_status.p_turn==me.piece_color &&  me.piece_color!=null) {
+// 		// do play
+// 		$('#move_div').show(1000);
+// 		setTimeout(function() { game_status_update();}, 15000);
+// 	} else {
+// 		// must wait for something
+// 		$('#move_div').hide(1000);
+// 		setTimeout(function() { game_status_update();}, 4000);
+// 	} 
+// }
+//Lecture 4 2nd Stage πινελιές
 function update_status(data) {
-	if (game_status.p_turn==null ||  data[0].p_turn != game_status.p_turn ||  data[0].status != game_status.status) {
-		fill_board();
-	}
+	var game_stat_old = game_status;
 	game_status=data[0];
 	update_info();
-	 if(game_status.p_turn==me.piece_color &&  me.piece_color!=null) {
+	if(game_status.p_turn==me.piece_color &&  me.piece_color!=null) {
 		// do play
+		if(game_stat_old.p_turn!=me.piece_color) {
+			fill_board();
+		}
 		$('#move_div').show(1000);
 		setTimeout(function() { game_status_update();}, 15000);
 	} else {
 		// must wait for something
 		$('#move_div').hide(1000);
 		setTimeout(function() { game_status_update();}, 4000);
-	} 
- 	
+	}
 }
 
 //lecture chess 4
