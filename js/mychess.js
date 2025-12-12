@@ -3,16 +3,18 @@ var me={};
 var game_status={};
 
 $( function() {
-	
+
+	$('#chess_login').click( login_to_game);
+	$('#chess_reset').click( reset_board);
+	$('#do_move').click( do_move);
 
 	$('#move_div').hide(); //Αρχικά το κρύβω το section κίνησης...
 
     draw_empty_board(null);
-    fill_board();
+    fill_board();	
+	game_status_update();
+
     
-	$('#chess_reset').click(reset_board);
-	$('#chess_login').click(login_to_game);
-    $('#do_move').click(do_move);
 
 }
 );
@@ -53,12 +55,12 @@ function draw_empty_board(p) {
 
 
 function fill_board() {
-	$.ajax(
-		{	method: "get",
-			url: "chess.php/board/" , 
-		 success: fill_board_by_data 
-		}
-		);
+	$.ajax({	
+		method: "get",
+		url: "chess.php/board/" , 
+		headers: {"App-Token": me.token},
+	 	success: fill_board_by_data 
+	});
 }
 
 function fill_board_by_data(data) {
@@ -77,12 +79,12 @@ function fill_board_by_data(data) {
 }
 
 function reset_board() {
-	$.ajax(
-		{method: 'post',
-		 url: "chess.php/board/", 
-		 success: fill_board_by_data 
-		}
-		);
+	$.ajax({	
+		method: 'post',
+	 	url: "chess.php/board/", 
+		headers: {"App-Token": me.token},			
+	 	success: fill_board_by_data 
+	});
 }
 
 function login_to_game() {
@@ -94,13 +96,16 @@ function login_to_game() {
 	draw_empty_board(p_color);
 	fill_board();
 	
-	$.ajax({url: "chess.php/player/"+p_color, 
-			method: 'PUT',
-			dataType: "json",
-			contentType: 'application/json',
-			data: JSON.stringify( {username: $('#username').val(), piece_color: p_color}),
-			success: login_result,
-			error: login_error});
+	$.ajax({
+		url: "chess.php/player/"+p_color, 
+		method: 'PUT',
+		dataType: "json",
+		contentType: 'application/json',
+		headers: {"App-Token": me.token},			
+		data: JSON.stringify( {username: $('#username').val(), piece_color: p_color}),
+		success: login_result,
+		error: login_error
+	});
 }
 
 function login_result(data) {
@@ -120,7 +125,15 @@ function login_error(data,y,z,c) {
 }
 
 function game_status_update() {
-	$.ajax({url: "chess.php/status/", success: update_status });
+	//1st stage
+	//$.ajax({url: "chess.php/status/", success: update_status });
+	//lecture 4
+    //2nd Stage with token in header
+	$.ajax({
+		url: "chess.php/status/", 
+		headers: {"App-Token": me.token},
+		success: update_status
+	});
 }
 
 //lecture chess 3
@@ -146,7 +159,7 @@ function update_status(data) {
 function do_move() {
 	var s = $('#the_move').val();
 	
-	var a = s.trim().split(/[ ]+/); //Για να δοθλεύει και με περισσότερα εσωτερικά κενα. π.χ. 2   2 3   2 θα δουλέψει!
+	var a = s.trim().split(/[ ]+/); //Για να δουλεύει και με περισσότερα εσωτερικά κενα. π.χ. 2   2 3   2 θα δουλέψει!
 	if(a.length!=4) {
 		alert('Must give 4 numbers seperated by space');
 		return;
@@ -155,13 +168,18 @@ function do_move() {
 			method: 'PUT',
 			dataType: "json",
 			contentType: 'application/json',
-			data: JSON.stringify( {x: a[2], y: a[3], token: me.token}), // token: me.token --> Προσωρινά, αφού θα το στέλνουμε τελικά στο headers
+			//Lecture 4 1st stage token in body
+			//data: JSON.stringify( {x: a[2], y: a[3], token: me.token}), // token: me.token --> Προσωρινά, αφού θα το στέλνουμε τελικά στο headers
+			//Lecture 4 2nd stage token in header
 			headers: {"App-Token": me.token},
+			data: JSON.stringify({x: a[2], y: a[3]}),
+
 			success: move_result,
 			error: login_error});
 }
 
-//lecture chess 4 empty at first
+//lecture 4 empty at first
 function move_result() {
-  fill_board_by_data(data);
+	fill_board_by_data(data);
+	$('#move_div').hide(1000);
 }

@@ -11,12 +11,23 @@ $request = explode('/', trim($_SERVER['PATH_INFO'],'/'));
 // Σε περίπτωση που τρέχουμε php –S 
 $input = json_decode(file_get_contents('php://input'),true);  // (php://input) --> To body του request
 
+//Lecture 4
+if($input==null) {
+    $input=[];
+}
+if(isset($_SERVER['HTTP_APP_TOKEN'])) {
+    $input['token']=$_SERVER['HTTP_APP_TOKEN'];
+} else {
+    $input['token']='';
+}
+
+//lecture 4 - add $input in every handle except handle_status. Why?
 switch ($r=array_shift($request)) {
 	case 'board' : 
 		switch ($b=array_shift($request)) {
 	  		case '':
 	  		case null: 
-				handle_board($method);
+				handle_board($method, $input);
 				break;
 			case 'piece': 
 				handle_piece($method, $request[0], $request[1], $input);
@@ -35,6 +46,7 @@ switch ($r=array_shift($request)) {
 			handle_status($method);
 		} else {
 			header("HTTP/1.1 404 Not Found");
+   			print "<h1>Page not found (404)</h1>";
 		}
 		break;
 	case 'player': 
@@ -46,18 +58,20 @@ switch ($r=array_shift($request)) {
 	  exit;
 }
 
-function handle_board($method) {
+//lecture 4 - add $input
+function handle_board($method, $input) {
 	if($method=='GET') {
-    	show_board();
+    	show_board($input);
   	} else if ($method=='POST') {
-    	reset_board();
+    	reset_board($input);
   	} else {
     	header('HTTP/1.1 405 Method Not Allowed');
   		print "<h1>Method Not Allowed (405)</h1>";
   	}
 }
 
-//Lecture chess 4
+//Lecture 1
+//lecture 4 - add $input,$input['token']
 function handle_piece($method, $x, $y, $input) {
     if($method=='GET') {
         show_piece($x,$y);
@@ -66,29 +80,34 @@ function handle_piece($method, $x, $y, $input) {
     }    
 }
 
-//Lecture chess 3
+//Lecture 3
+//lecture 4 - add $input
 function handle_player($method, $p, $input) {
   switch ($b=array_shift($p)) {
 		case '':
-		case null: if($method=='GET') {show_users($method);}
-				   else {header("HTTP/1.1 400 Bad Request"); 
-					 print json_encode(['errormesg'=>"Method $method not allowed here."]);}
-	                break;
+		case null: 
+			if($method=='GET') {
+				show_users($method);
+			} else {
+				header("HTTP/1.1 400 Bad Request"); 
+				print json_encode(['errormesg'=>"Method $method not allowed here."]);
+			}
+	        break;
 		case 'B': 
 		case 'W': 
-			handle_user($method, $b,$input);
+			handle_user($method, $b, $input);
 			break;
 		default: header("HTTP/1.1 404 Not Found");
 		  print json_encode(['errormesg'=>"Player $b not found."]);
 		  break;
-		}
+	}
 }
 
 function handle_status($method) {
-  if($method=='GET') {
-    show_status();
-  } else {
-    header('HTTP/1.1 405 Method Not Allowed');
+  	if($method=='GET') {
+    	show_status();
+  	} else {
+  		header('HTTP/1.1 405 Method Not Allowed');
 		print "<h1>Method Not Allowed (405)</h1>";
 	}
 }
