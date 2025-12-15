@@ -195,21 +195,86 @@ function add_valid_moves_to_piece(&$board,$b,$x,$y) {
 
 //Lecture 4
 function king_moves(&$board,$b,$x,$y) {
-	//TODO
+
+	$directions = [
+		[1,0],
+		[-1,0],
+		[0,1],
+		[0,-1],
+		[1,1],
+		[-1,1],
+		[1,-1],
+		[-1,-1]
+	];	
+	$moves=[];
+	foreach($directions as $d=>$direction) {
+		$i=$x+$direction[0];
+		$j=$y+$direction[1];
+		if ( $i>=1 && $i<=8 && $j>=1 && $j<=8 && $board[$i][$j]['piece_color'] != $b) {
+			$move=['x'=>$i, 'y'=>$j];
+			$moves[]=$move;
+		}
+	}
+	$board[$x][$y]['moves'] = $moves;
+	return(sizeof($moves));
 	return(0);
 }
+
 function queen_moves(&$board,$b,$x,$y) {
-	//TODO
-	return(0);
+	$directions = [
+		[1,0],
+		[-1,0],
+		[0,1],
+		[0,-1],
+		[1,1],
+		[-1,1],
+		[1,-1],
+		[-1,-1]
+	];	
+	return(bishop_rook_queen_moves($board,$b,$x,$y,$directions));
+}
+
+function bishop_rook_queen_moves(&$board,$b,$x,$y,$directions) {
+	$moves=[];
+
+	foreach($directions as $d=>$direction) {
+		for($i=$x+$direction[0],$j=$y+$direction[1]; $i>=1 && $i<=8 && $j>=1 && $j<=8; $i+=$direction[0], $j+=$direction[1]) {
+			if( $board[$i][$j]['piece_color'] == null ){ 
+				$move=['x'=>$i, 'y'=>$j];
+				$moves[]=$move;
+			} else if ( $board[$i][$j]['piece_color'] != $b) {
+				$move=['x'=>$i, 'y'=>$j];
+				$moves[]=$move;
+				// Υπάρχει πιόνι αντιπάλου... Δεν πάμε παραπέρα.
+				break;
+			} else if ( $board[$i][$j]['piece_color'] == $b) {
+				break;
+			}
+		}
+
+	}
+	$board[$x][$y]['moves'] = $moves;
+	return(sizeof($moves));
 }
 function rook_moves(&$board,$b,$x,$y) {
-	//TODO
-	return(0);
+	$directions = [
+		[1,0],
+		[-1,0],
+		[0,1],
+		[0,-1]
+	];	
+	return(bishop_rook_queen_moves($board,$b,$x,$y,$directions));
 }
-	//TODO
 function bishop_moves(&$board,$b,$x,$y) {
-	return(0);
+	$directions = [
+		[1,1],
+		[-1,1],
+		[1,-1],
+		[-1,-1]
+	];	
+	return(bishop_rook_queen_moves($board,$b,$x,$y,$directions));
 }
+
 function knight_moves(&$board,$b,$x,$y) {
 	$m = [
 		[2,1],
@@ -225,7 +290,8 @@ function knight_moves(&$board,$b,$x,$y) {
 	foreach($m as $k=>$t) {
 		$x2=$x+$t[0];
 		$y2=$y+$t[1];
-		if( $x2>=1 && $x2<=8 && $y2>=1 && $y2<=8 &&	$board[$x2][$y2]['piece_color'] !=$b ) {
+		if( $x2>=1 && $x2<=8 && $y2>=1 && $y2<=8 &&
+			$board[$x2][$y2]['piece_color'] !=$b ) {
 			// Αν ο προορισμός είναι εντός σκακιέρας και δεν υπάρχει δικό μου πιόνι
 			$move=['x'=>$x2, 'y'=>$y2];
 			$moves[]=$move;
@@ -234,20 +300,30 @@ function knight_moves(&$board,$b,$x,$y) {
 	$board[$x][$y]['moves'] = $moves;
 	return(sizeof($moves));
 }
+
 function pawn_moves(&$board,$b,$x,$y) {
-	//semi completed
-	$direction=($b=='W')?1:-1;  //If W then direction1 else -1
-	$start_row = ($b=='W')?2:7; //Θέση εκκίνησης If W then 2 else 7
-	$moves=[]; //πιθανές κινήσεις
+	$direction=($b=='W')?1:-1;
+	$start_row = ($b=='W')?2:7;
+	$moves=[];
 	
 	if($board[$x][$y+$direction]['piece_color']==null) {
 		$move=['x'=>$x, 'y'=>$y+$direction];
 		$moves[]=$move;
-		if($y==$start_row && $board[$x][$y+2*$direction]['piece_color']==null) { //Αρχική κίνηση 2 θέσεων
+		if($y==$start_row && $board[$x][$y+2*$direction]['piece_color']==null) {
 			$move=['x'=>$x, 'y'=>$y+2*$direction];
 			$moves[]=$move;
 		}
 	}
+	$j=$y+$direction;
+	if($j>=1 && $j<=8) {
+		for($i=$x-1;$i<=$x+1;$i+=2) {
+			if($i>=1 && $i<=8 && $board[$i][$j]['piece_color']!=null && $board[$i][$j]['piece_color']!=$b) {
+				$move=['x'=>$i, 'y'=>$j];
+				$moves[]=$move;
+			}
+		}
+	}
+
 	$board[$x][$y]['moves'] = $moves;
 	return(sizeof($moves));
 }
