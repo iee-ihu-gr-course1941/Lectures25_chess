@@ -127,6 +127,18 @@ function fill_board_by_data(data) {
 		
 		$(id).addClass(o.b_color+'_square').html(im);
 	}
+
+    //lecture 5 drag
+	$('.ui-droppable').droppable( "disable" );
+	if(me && me.piece_color!=null) {
+		$('.piece'+me.piece_color).draggable({start: start_dragging, stop: end_dragging, revert:true});
+	}
+	if(me.piece_color!=null && game_status.p_turn==me.piece_color) {
+		$('#move_div').show(1000);
+	} else {
+		$('#move_div').hide(1000);
+	}
+
 }
 
 function login_to_game() {
@@ -254,3 +266,43 @@ function update_moves_selector() {
 	}
 }
 
+function start_dragging ( event, ui ) {
+	var x;
+	
+	var o=event.target.parentNode;
+	var id = o.id;
+	var a = id.trim().split(/_/);
+	
+	$(o).addClass('tomove');
+	for(i=0;i<board.length;i++) {
+		if(board[i].x==a[1] && board[i].y==a[2] && board[i].moves && Array.isArray(board[i].moves)) {
+			for(m=0;m<board[i].moves.length;m++) {
+				$('#the_move_dest').append('<option value="'+board[i].moves[m].x+' '+board[i].moves[m].y+'">'+board[i].moves[m].x+' '+board[i].moves[m].y+'</option>');
+				var id = '#square_'+ board[i].moves[m].x +'_' + board[i].moves[m].y;
+				$(id).addClass('pmove').droppable({drop: dropping}).droppable('enable');
+			}
+		}
+	}
+}
+
+function dropping( event, ui ) {
+
+	ui.draggable[0].validMove=1;
+	var id = this.id;
+	var a2 = id.split(/_/);
+	var a1 = ui.draggable[0].parentNode.id.split(/_/);
+
+	$('#the_move').val(a1[1]+' '+a1[2]+' '+a2[1]+' '+a2[2]);
+	$('.chess_square').removeClass('pmove').removeClass('tomove');
+	do_move();
+}
+
+function end_dragging ( event, ui ) {
+	if(this.validMove) {
+		this.validMove=0;
+		return;
+	}
+	$('.chess_square').removeClass('pmove').removeClass('tomove');
+	this.top=0;
+	this.left=0;
+}
