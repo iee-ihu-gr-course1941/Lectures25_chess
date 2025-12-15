@@ -2,10 +2,8 @@
 
 //Almost same with the show_board...
 function show_status() {
-    global $mysqli;
+  global $mysqli;
 	
-    update_game_status();
-
 	$sql = 'select * from game_status';
 	$st = $mysqli->prepare($sql);
 
@@ -65,7 +63,7 @@ function update_game_status() {
 	$st->execute();
 }
 
-//lecture 4
+//lecture 4 - Returns the status of the game
 function read_status() {
 	global $mysqli;
 	

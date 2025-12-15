@@ -2,7 +2,10 @@
     border:1px solid black;text-align:center;}
 #chess_table {border-collapse: collapse;}
 
-TD.B_square {background-color:#DDD;} 
-TD.W_square {background-color:#FFF;}
+td.B_square {background-color:#DDD;} 
+td.W_square {background-color:#FFF;}
 
 IMG.piece {width: 2.1em; height:2.8em;} 
+
+td.pmove {border:3px solid blue; background-color:yellow;}
+td.tomove {border:3px solid blue; background-color:blue;}

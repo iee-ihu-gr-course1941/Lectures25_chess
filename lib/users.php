@@ -42,9 +42,8 @@ function set_user($b,$input) {
 
 	$sql = 'select count(*) as c 
 	        from players 
-			where piece_color=? 
-			and username is not null
-			and last_action > (NOW() - INTERVAL 20 MINUTE)';
+		    where piece_color=? 
+			and username is not null';
 	$st = $mysqli->prepare($sql);
 	$st->bind_param('s',$b);
 	$st->execute();
@@ -57,8 +56,7 @@ function set_user($b,$input) {
 	}
 
 	$sql = 'update players 
-	        set username=?, 
-	        token=md5(CONCAT( ?, NOW()))
+	        set username=?, token=md5(CONCAT( ?, NOW()))
 		    where piece_color=?';
 	$st2 = $mysqli->prepare($sql);
 	$st2->bind_param('sss',$username,$username,$b);
@@ -74,9 +72,8 @@ function set_user($b,$input) {
 	print json_encode($res->fetch_all(MYSQLI_ASSOC), JSON_PRETTY_PRINT);
 }
 
-
+//Returns the player to which belongs the token
 function current_color($token) {
-	
 	global $mysqli;
 	if($token==null) {return(null);}
 	$sql = 'select * from players where token=?';
@@ -89,4 +86,5 @@ function current_color($token) {
 	}
 	return(null);
 }
+
 ?>

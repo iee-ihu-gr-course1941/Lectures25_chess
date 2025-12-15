@@ -3,19 +3,45 @@ var me={};
 var game_status={};
 
 $( function() {
-	
+	draw_empty_board(null);
+	fill_board();
 
-	$('#move_div').hide(); //Αρχικά το κρύβω το section κίνησης...
-
-    draw_empty_board(null);
-    fill_board();
-    
 	$('#chess_reset').click(reset_board);
-	$('#chess_login').click(login_to_game);
-    $('#do_move').click(do_move);
+	$('#chess_login').click( login_to_game);
+	$('#do_move').click(do_move);
 
+	$('#move_div').hide(1000);
 }
 );
+
+//lecture chess 4
+function do_move() {
+	var s = $('#the_move').val();
+	
+	var a = s.trim().split(/[ ]+/); //Για να δουλεύει και με περισσότερα εσωτερικά κενα. π.χ. 2   2 3   2 θα δουλέψει!
+	if(a.length!=4) {
+		alert('Must give 4 numbers seperated by space');
+		return;
+	}
+	$.ajax({url: "chess.php/board/piece/"+a[0]+'/'+a[1], 
+			method: 'PUT',
+			dataType: "json",
+			contentType: 'application/json',
+			//Lecture 4 1st stage token in body
+			//data: JSON.stringify( {x: a[2], y: a[3], token: me.token}), // token: me.token --> Προσωρινά, αφού θα το στέλνουμε τελικά στο headers
+			//Lecture 4 2nd stage token in header
+			headers: {"App-Token": me.token},
+			data: JSON.stringify({x: a[2], y: a[3]}),
+
+			success: move_result,
+			error: login_error});
+}
+
+//lecture 4 empty at first
+function move_result() {
+	fill_board_by_data(data);
+	//$('#move_div').hide(1000); //$$$
+}
 
 // Αρχική έκδοση, χωρίς την αντιστροφή του board ανάλογα με το W ή Β
 // function draw_empty_board() {
@@ -49,41 +75,46 @@ function draw_empty_board(p) {
 	t+='</table>';
 
 	$('#chess_board').html(t);
+
+	//Lecture 4
+	//Onclick add handler on each square
+	$('.chess_square').click(click_on_piece); //$$$
 }
 
-
 function fill_board() {
-	$.ajax(
-		{	method: "get",
-			url: "chess.php/board/" , 
-		 success: fill_board_by_data 
-		}
-		);
+	$.ajax({	
+		method: "get",
+		url: "chess.php/board/" , 
+		headers: {"App-Token": me.token},
+	 	success: fill_board_by_data 
+	});
+}
+
+function reset_board() {
+	$.ajax({	
+		method: 'post',
+	 	url: "chess.php/board/", 
+		headers: {"App-Token": me.token},			
+	 	success: fill_board_by_data 
+	});
+
+	//Lecture 4 Πινελιές
+	$('#move_div').hide(1000);  //$$$
+	$('#game_initializer').show(2000); //$$$
 }
 
 function fill_board_by_data(data) {
-	
 	for(var i=0;i<data.length;i++) {
 		var o = data[i];
 		var id = '#square_'+ o.x +'_' + o.y;
 		var c = (o.piece!=null)?o.piece_color + o.piece:'';
 		
-		var im = ''; //Χωρίς τα πιόνια
-		var im = (o.piece!=null)?c:''; //πιόνια σαν text
-	    var im = (o.piece!=null)?'<img src="images/'+c+'.png" class="piece">':''; //πιόνια με εικόνα
+		//var im = ''; //Χωρίς τα πιόνια
+		//var im = (o.piece!=null)?c:''; //πιόνια σαν text
+		var im = (o.piece!=null)?'<img class="piece" src="images/'+c+'.png" >':''; //πιόνια με εικόνα
 		
 		$(id).addClass(o.b_color+'_square').html(im);
 	}
-	update_info();
-}
-
-function reset_board() {
-	$.ajax(
-		{method: 'post',
-		 url: "chess.php/board/", 
-		 success: fill_board_by_data 
-		}
-		);
 }
 
 function login_to_game() {
@@ -95,20 +126,23 @@ function login_to_game() {
 	draw_empty_board(p_color);
 	fill_board();
 	
-	$.ajax({url: "chess.php/player/"+p_color, 
-			method: 'PUT',
-			dataType: "json",
-			contentType: 'application/json',
-			data: JSON.stringify( {username: $('#username').val(), piece_color: p_color}),
-			success: login_result,
-			error: login_error});
+	$.ajax({
+		url: "chess.php/player/"+p_color, 
+		method: 'PUT',
+		dataType: "json",
+		contentType: 'application/json',
+		headers: {"App-Token": me.token},			
+		data: JSON.stringify( {username: $('#username').val(), piece_color: p_color}),
+		success: login_result,
+		error: login_error
+	});
 }
 
 function login_result(data) {
 	me = data[0];
 	$('#game_initializer').hide();
-	game_status_update();
 	update_info();
+	game_status_update();
 }
 
 function update_info(){
@@ -121,17 +155,25 @@ function login_error(data,y,z,c) {
 }
 
 function game_status_update() {
-	$.ajax({url: "chess.php/status/", success: update_status });
+	//1st stage
+	//$.ajax({url: "chess.php/status/", success: update_status });
+	//lecture 4
+    //2nd Stage with token in header
+	$.ajax({
+		url: "chess.php/status/", 
+		headers: {"App-Token": me.token},
+		success: update_status
+	});
 }
 
+//lecture 3 1st stage
 function update_status(data) {
 	if (game_status.p_turn==null ||  data[0].p_turn != game_status.p_turn ||  data[0].status != game_status.status) {
 		fill_board();
 	}
 	game_status=data[0];
 	update_info();
-	 if(game_status.p_turn==me.piece_color &&  me.piece_color!=null) {
-		x=0;
+	if(game_status.p_turn==me.piece_color &&  me.piece_color!=null) {
 		// do play
 		$('#move_div').show(1000);
 		setTimeout(function() { game_status_update();}, 15000);
@@ -140,29 +182,83 @@ function update_status(data) {
 		$('#move_div').hide(1000);
 		setTimeout(function() { game_status_update();}, 4000);
 	} 
- 	
+}
+// Lecture 4 2nd Stage πινελιές
+// function update_status(data) {
+// 	var game_stat_old = game_status;
+// 	game_status=data[0];
+// 	update_info();
+// 	if(game_status.p_turn==me.piece_color &&  me.piece_color!=null) {
+// 		// do play
+// 		if(game_stat_old.p_turn!=me.piece_color) {
+// 			fill_board();
+// 		}
+// 		$('#move_div').show(1000);
+// 		setTimeout(function() { game_status_update();}, 15000);
+// 	} else {
+// 		// must wait for something
+// 		$('#move_div').hide(1000);
+// 		setTimeout(function() { game_status_update();}, 4000);
+// 	}
+// }
+
+
+
+
+
+
+
+
+function click_on_piece(e) {
+	var o=e.target;
+	if(o.tagName!='TD') {o=o.parentNode;}
+	if(o.tagName!='TD') {return;}
+	
+	var id=o.id;
+	var a=id.split(/_/);
+	$('#the_move_src').val(a[1]+' ' +a[2]);
+	update_moves_selector();
 }
 
-//lecture chess 4
-function do_move() {
-	var s = $('#the_move').val();
-	
-	var a = s.trim().split(/[ ]+/); //Για να δοθλεύει και με περισσότερα εσωτερικά κενα. π.χ. 2   2 3   2 θα δουλέψει!
-	if(a.length!=4) {
-		alert('Must give 4 numbers seperated by space');
+function update_moves_selector() {
+	$('.chess_square').removeClass('pmove').removeClass('tomove');
+	var s = $('#the_move_src').val();
+	var a = s.trim().split(/[ ]+/);
+	$('#the_move_dest').html('');
+	if(a.length!=2) {
 		return;
 	}
-	$.ajax({url: "chess.php/board/piece/"+a[0]+'/'+a[1], 
-			method: 'PUT',
-			dataType: "json",
-			contentType: 'application/json',
-			data: JSON.stringify( {x: a[2], y: a[3]}),
-			headers: {"X-Token": me.token},
-			success: move_result,
-			error: login_error});
+	var id = '#square_'+ a[0]+'_'+a[1];
+	$(id).addClass('tomove');
+	for(i=0;i<board.length;i++) {
+		if(board[i].x==a[0] && board[i].y==a[1]) {
+			for(m=0;m<board[i].moves.length;m++) {
+				$('#the_move_dest').append('<option value="'+board[i].moves[m].x+' '+board[i].moves[m].y+'">'+board[i].moves[m].x+' '+board[i].moves[m].y+'</option>');
+				var id = '#square_'+ board[i].moves[m].x +'_' + board[i].moves[m].y;
+				$(id).addClass('pmove');
+			}
+			
+		}
+	}
 }
 
-//lecture chess 4 empty at first
-function move_result() {
 
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,23 +1,55 @@
 //Global section
 var me={};
 var game_status={};
+var board={};
 
 $( function() {
+	draw_empty_board(null);
+	fill_board();
 
-	$('#chess_login').click( login_to_game);
-	$('#chess_reset').click( reset_board);
-	$('#do_move').click( do_move);
+	$('#chess_reset').click(reset_board);
+	$('#chess_login').click(login_to_game);
+	$('#do_move').click(do_move);
+	$('#refresh_board').click(fill_board);
 
-	$('#move_div').hide(); //Αρχικά το κρύβω το section κίνησης...
+	$('#move_div').hide(1000);
 
-    draw_empty_board(null);
-    fill_board();	
-	game_status_update();
-
-    
+	//lecture 4 Auto move 2
+	$('#the_move_src').change( update_moves_selector);
+	$('#do_move2').click( do_move2);
 
 }
 );
+
+//lecture chess 4
+function do_move() {
+	var s = $('#the_move').val();
+	
+	var a = s.trim().split(/[ ]+/); //Για να δουλεύει και με περισσότερα εσωτερικά κενα. π.χ. 2   2 3   2 θα δουλέψει!
+	if(a.length!=4) {
+		alert('Must give 4 numbers seperated by space');
+		return;
+	}
+	$.ajax({url: "chess.php/board/piece/"+a[0]+'/'+a[1], 
+			method: 'PUT',
+			dataType: "json",
+			contentType: 'application/json',
+			//Lecture 4 1st stage token in body
+			//data: JSON.stringify( {x: a[2], y: a[3], token: me.token}), // token: me.token --> Προσωρινά, αφού θα το στέλνουμε τελικά στο headers
+			//Lecture 4 2nd stage token in header
+			headers: {"App-Token": me.token},
+			data: JSON.stringify({x: a[2], y: a[3]}),
+
+			success: move_result,
+			error: login_error});
+}
+
+//lecture 4 empty at first
+function move_result(data) {
+	fill_board_by_data(data);
+	$('#move_div').hide(1000); //Κρύψε όλο το div διαχείρισης κίνησης
+	$('#the_move').val(''); //Άδειασε το κείμενο από το input συντεταγμένων
+}
 
 // Αρχική έκδοση, χωρίς την αντιστροφή του board ανάλογα με το W ή Β
 // function draw_empty_board() {
@@ -54,41 +86,7 @@ function draw_empty_board(p) {
 
 	//Lecture 4
 	//Onclick add handler on each square
-	$('.chess_square').click(click_on_piece);
-}
-
-
-function click_on_piece(e) {
-	var o=e.target;
-	if(o.tagName!='TD') {o=o.parentNode;}
-	if(o.tagName!='TD') {return;}
-	
-	var id=o.id;
-	var a=id.split(/_/);
-	$('#the_move_src').val(a[1]+' ' +a[2]);
-	update_moves_selector();
-}
-
-function update_moves_selector() {
-	$('.chess_square').removeClass('pmove').removeClass('tomove');
-	var s = $('#the_move_src').val();
-	var a = s.trim().split(/[ ]+/);
-	$('#the_move_dest').html('');
-	if(a.length!=2) {
-		return;
-	}
-	var id = '#square_'+ a[0]+'_'+a[1];
-	$(id).addClass('tomove');
-	for(i=0;i<board.length;i++) {
-		if(board[i].x==a[0] && board[i].y==a[1]) {
-			for(m=0;m<board[i].moves.length;m++) {
-				$('#the_move_dest').append('<option value="'+board[i].moves[m].x+' '+board[i].moves[m].y+'">'+board[i].moves[m].x+' '+board[i].moves[m].y+'</option>');
-				var id = '#square_'+ board[i].moves[m].x +'_' + board[i].moves[m].y;
-				$(id).addClass('pmove');
-			}
-			
-		}
-	}
+	$('.chess_square').click(click_on_piece); 
 }
 
 function fill_board() {
@@ -100,21 +98,6 @@ function fill_board() {
 	});
 }
 
-function fill_board_by_data(data) {
-	
-	for(var i=0;i<data.length;i++) {
-		var o = data[i];
-		var id = '#square_'+ o.x +'_' + o.y;
-		var c = (o.piece!=null)?o.piece_color + o.piece:'';
-		
-		var im = ''; //Χωρίς τα πιόνια
-		var im = (o.piece!=null)?c:''; //πιόνια σαν text
-	    var im = (o.piece!=null)?'<img src="images/'+c+'.png" class="piece">':''; //πιόνια με εικόνα
-		
-		$(id).addClass(o.b_color+'_square').html(im);
-	}
-}
-
 function reset_board() {
 	$.ajax({	
 		method: 'post',
@@ -124,8 +107,26 @@ function reset_board() {
 	});
 
 	//Lecture 4 Πινελιές
-	$('#move_div').hide();
+	$('#move_div').hide(1000); //Κρύψε όλο το div διαχείρισης κίνησης
+	$('#the_move').val(''); //Άδειασε το κείμενο από το input συντεταγμένων
 	$('#game_initializer').show(2000);
+}
+
+function fill_board_by_data(data) {
+	//Lecture 4 paint the board piese on click
+    board=data; 
+
+	for(var i=0;i<data.length;i++) {
+		var o = data[i];
+		var id = '#square_'+ o.x +'_' + o.y;
+		var c = (o.piece!=null)?o.piece_color + o.piece:'';
+		
+		//var im = ''; //Χωρίς τα πιόνια
+		//var im = (o.piece!=null)?c:''; //πιόνια σαν text
+		var im = (o.piece!=null)?'<img class="piece" src="images/'+c+'.png" >':''; //πιόνια με εικόνα
+		
+		$(id).addClass(o.b_color+'_square').html(im);
+	}
 }
 
 function login_to_game() {
@@ -156,6 +157,10 @@ function login_result(data) {
 	game_status_update();
 }
 
+function update_info(){
+	$('#game_info').html("I am Player: "+me.piece_color+", my name is "+me.username +'<br>Token='+me.token+'<br>Game state: '+game_status.status+', '+ game_status.p_turn+' must play now.');	
+}
+
 function login_error(data,y,z,c) {
 	var x = data.responseJSON;
 	alert(x.errormesg);
@@ -173,71 +178,79 @@ function game_status_update() {
 	});
 }
 
-function update_info(){
-	$('#game_info').html("I am Player: "+me.piece_color+", my name is "+me.username +'<br>Token='+me.token+'<br>Game state: '+game_status.status+', '+ game_status.p_turn+' must play now.');	
-}
-
-//lecture 3 1st stage
-// function update_status(data) {
-// 	if (game_status.p_turn==null ||  data[0].p_turn != game_status.p_turn ||  data[0].status != game_status.status) {
-// 		fill_board();
-// 	}
-// 	game_status=data[0];
-// 	update_info();
-// 	 if(game_status.p_turn==me.piece_color &&  me.piece_color!=null) {
-// 		// do play
-// 		$('#move_div').show(1000);
-// 		setTimeout(function() { game_status_update();}, 15000);
-// 	} else {
-// 		// must wait for something
-// 		$('#move_div').hide(1000);
-// 		setTimeout(function() { game_status_update();}, 4000);
-// 	} 
-// }
-//Lecture 4 2nd Stage πινελιές
+//lecture 3
 function update_status(data) {
-	var game_stat_old = game_status;
+	if (game_status.p_turn==null ||  data[0].p_turn != game_status.p_turn ||  data[0].status != game_status.status) {
+		fill_board();
+	}
 	game_status=data[0];
 	update_info();
 	if(game_status.p_turn==me.piece_color &&  me.piece_color!=null) {
-		// do play
-		if(game_stat_old.p_turn!=me.piece_color) {
-			fill_board();
-		}
+		x=0;		// do play
 		$('#move_div').show(1000);
 		setTimeout(function() { game_status_update();}, 15000);
 	} else {
 		// must wait for something
 		$('#move_div').hide(1000);
 		setTimeout(function() { game_status_update();}, 4000);
-	}
+	} 
+}
+// Lecture 4 2nd Stage πινελιές obsolete...
+// function update_status(data) {
+// 	var game_stat_old = game_status;
+// 	game_status=data[0];
+// 	update_info();
+// 	if(game_status.p_turn==me.piece_color &&  me.piece_color!=null) {
+// 		// do play
+// 		if(game_stat_old.p_turn!=me.piece_color) {
+// 			fill_board();
+// 		}
+// 		$('#move_div').show(1000);
+// 		setTimeout(function() { game_status_update();}, 15000);
+// 	} else {
+// 		// must wait for something
+// 		$('#move_div').hide(1000);
+// 		setTimeout(function() { game_status_update();}, 4000);
+// 	}
+// }
+
+function click_on_piece(e) {
+	var o=e.target;
+	if(o.tagName!='TD') {o=o.parentNode;}
+	if(o.tagName!='TD') {return;}
+	
+	var id=o.id;
+	var a=id.split(/_/);
+	$('#the_move_src').val(a[1]+' ' +a[2]);
+	update_moves_selector();
 }
 
-//lecture chess 4
-function do_move() {
-	var s = $('#the_move').val();
-	
-	var a = s.trim().split(/[ ]+/); //Για να δουλεύει και με περισσότερα εσωτερικά κενα. π.χ. 2   2 3   2 θα δουλέψει!
-	if(a.length!=4) {
-		alert('Must give 4 numbers seperated by space');
+function do_move2() {
+	$('#the_move').val($('#the_move_src').val() +' ' + $('#the_move_dest').val());
+	do_move();
+	$('.chess_square').removeClass('pmove').removeClass('tomove');
+}
+
+//Εμφάνιση πιθανών κινήσεων του επιλεγμένου πιονιού.
+function update_moves_selector() {
+	$('.chess_square').removeClass('pmove').removeClass('tomove');
+	var s = $('#the_move_src').val();
+	var a = s.trim().split(/[ ]+/);
+	$('#the_move_dest').html('');
+	if(a.length!=2) {
 		return;
 	}
-	$.ajax({url: "chess.php/board/piece/"+a[0]+'/'+a[1], 
-			method: 'PUT',
-			dataType: "json",
-			contentType: 'application/json',
-			//Lecture 4 1st stage token in body
-			//data: JSON.stringify( {x: a[2], y: a[3], token: me.token}), // token: me.token --> Προσωρινά, αφού θα το στέλνουμε τελικά στο headers
-			//Lecture 4 2nd stage token in header
-			headers: {"App-Token": me.token},
-			data: JSON.stringify({x: a[2], y: a[3]}),
-
-			success: move_result,
-			error: login_error});
+	var id = '#square_'+ a[0]+'_'+a[1];
+	$(id).addClass('tomove');
+	for(i=0;i<board.length;i++) {
+		if(board[i].x==a[0] && board[i].y==a[1]) {
+			for(m=0;m<board[i].moves.length;m++) {
+				$('#the_move_dest').append('<option value="'+board[i].moves[m].x+' '+board[i].moves[m].y+'">'+board[i].moves[m].x+' '+board[i].moves[m].y+'</option>');
+				var id = '#square_'+ board[i].moves[m].x +'_' + board[i].moves[m].y;
+				$(id).addClass('pmove');
+			}
+			
+		}
+	}
 }
 
-//lecture 4 empty at first
-function move_result() {
-	fill_board_by_data(data);
-	$('#move_div').hide(1000);
-}

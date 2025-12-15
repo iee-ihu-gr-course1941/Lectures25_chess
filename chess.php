@@ -15,9 +15,9 @@ $input = json_decode(file_get_contents('php://input'),true);  // (php://input) -
 if($input==null) {
     $input=[];
 }
-if(isset($_SERVER['HTTP_APP_TOKEN'])) {
+if (isset($_SERVER['HTTP_APP_TOKEN'])) {
     $input['token']=$_SERVER['HTTP_APP_TOKEN'];
-} else {
+} elseif (!isset($input['token'])) {
     $input['token']='';
 }
 
@@ -31,9 +31,6 @@ switch ($r=array_shift($request)) {
 				break;
 			case 'piece': 
 				handle_piece($method, $request[0], $request[1], $input);
-				break;
-			case 'player': 
-				handle_player($method, $request[0], $input);
 				break;
 			default: 
 				header("HTTP/1.1 404 Not Found");
@@ -108,7 +105,7 @@ function handle_status($method) {
     	show_status();
   	} else {
   		header('HTTP/1.1 405 Method Not Allowed');
-		print "<h1>Method Not Allowed (405)</h1>";
+		  print "<h1>Method Not Allowed (405)</h1>";
 	}
 }
 
