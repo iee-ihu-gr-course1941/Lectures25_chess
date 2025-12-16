@@ -128,9 +128,12 @@ function read_board() {
 }
 
 //lecture 4 call by reference, pointers
+//transformation from a 1-dimension array to 2-dimension one.
 function convert_board(&$orig_board) {
 	$board=[];
 	foreach($orig_board as $i=>&$row) {
+		//Each position on $board e.g. $board[2][5] points to the same point in memory 
+		//as the original 1-dimensional array
 		$board[$row['x']][$row['y']] = &$row;
 	} 
 	return($board);

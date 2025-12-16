@@ -25,8 +25,7 @@ Table of Contents
 # Demo Page
 
 Μπορείτε να κατεβάσετε τοπικά ή να επισκευτείτε την σελίδα: 
-https://users.iee.ihu.gr/~asidirop/adise21/Lectures21-chess/
-
+https://users.iee.ihu.gr/~konsmall/chess/
 
 
 # Εγκατάσταση
@@ -34,19 +33,19 @@ https://users.iee.ihu.gr/~asidirop/adise21/Lectures21-chess/
 ## Απαιτήσεις
 
 * Apache2
-* Mysql Server
+* Mysql Server / MariaDB
 * php
 
 ## Οδηγίες Εγκατάστασης
 
  * Κάντε clone το project σε κάποιον φάκελο <br/>
-  `$ git clone https://github.com/iee-ihu-gr-course1941/Lectures21-chess.git`
+  `$ git clone https://github.com/iee-ihu-gr-course1941/Lectures25-chess.git`
 
  * Βεβαιωθείτε ότι ο φάκελος είναι προσβάσιμος από τον Apache Server. πιθανόν να χρειαστεί να καθορίσετε τις παρακάτω ρυθμίσεις.
 
- * Θα πρέπει να δημιουργήσετε στην Mysql την βάση με όνομα 'adise21' και να φορτώσετε σε αυτήν την βάση τα δεδομένα από το αρχείο schema.sql
+ * Θα πρέπει να δημιουργήσετε στην Mysql την βάση με όνομα 'chess' και να φορτώσετε σε αυτήν την βάση τα δεδομένα από το αρχείο schema.sql
 
- * Θα πρέπει να φτιάξετε το αρχείο lib/config_local.php το οποίο να περιέχει:
+ * Θα πρέπει να φτιάξετε το αρχείο lib/db_upass.php το οποίο να περιέχει:
 ```
     <?php
 	$DB_PASS = 'κωδικός';
@@ -115,7 +114,7 @@ GET /board/piece/:x/:y/
 ```
 PUT /board/piece/:x/:y/
 ```
-Json Data:
+Json Data στο body:
 
 | Field             | Description                 | Required   |
 | ----------------- | --------------------------- | ---------- |
@@ -139,7 +138,7 @@ GET /players/:p
 ```
 PUT /players/:p
 ```
-Json Data:
+Json Data στο body:
 
 | Field             | Description                 | Required   |
 | ----------------- | --------------------------- | ---------- |
